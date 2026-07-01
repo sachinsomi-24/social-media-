@@ -54,6 +54,17 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Social Media API is running' });
 });
 
+// Serve frontend static files in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+  
+  // All other GET requests redirect to index.html
+  app.get('*', (req, res, next) => {
+    if (req.originalUrl.startsWith('/api')) return next();
+    res.sendFile(path.resolve(__dirname, '../frontend/dist/index.html'));
+  });
+}
+
 // Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
