@@ -1,0 +1,11 @@
+{
+  "name": "nexus-social-media",
+  "version": "1.0.0",
+  "description": "Nexus Social Media Platform",
+  "scripts": {
+    "backend": "npm run dev --prefix backend",
+    "frontend": "npm run dev --prefix frontend",
+    "inspect": "node db-inspector.js",
+    "dev": "npx concurrently --kill-others \"npm run backend\" \"npm run frontend\""
+  }
+}
