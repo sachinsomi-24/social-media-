@@ -19,23 +19,36 @@ const chatRoutes = require('./routes/chatRoutes');
 const app = express();
 const server = http.createServer(app);
 
+// CORS origin configuration — supports both dev and prod
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? [process.env.CLIENT_URL, process.env.RENDER_EXTERNAL_URL].filter(Boolean)
+  : ['http://localhost:5173'];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.some(allowed => origin === allowed)) {
+      return callback(null, true);
+    }
+    // In production, also allow same-origin requests (frontend served from same host)
+    if (process.env.NODE_ENV === 'production') {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  credentials: true
+};
+
 // Initialize Socket.io
-const io = new Server(server, {
-  cors: {
-    origin: 'http://localhost:5173',
-    methods: ['GET', 'POST'],
-    credentials: true
-  }
-});
+const io = new Server(server, { cors: corsOptions });
 
 // Connect to MongoDB
 connectDB();
 
 // Middleware
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
-}));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
